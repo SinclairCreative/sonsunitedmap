@@ -587,45 +587,57 @@
         else                      need.add(`p_${c.id}`);
       });
 
+      // Hide unused markers instead of removing them
       for (const k in markers) {
         if (!need.has(k)) {
-          markers[k].remove();
-          delete markers[k];
+          markers[k].getElement().style.display = 'none';
+        } else {
+          markers[k].getElement().style.display = '';
         }
       }
 
       cls.forEach(c => {
         if (c.properties.cluster) {
           const key = `c_${c.properties.cluster_id}`;
-          if (markers[key]) return;
-          const [lng, lat] = c.geometry.coordinates;
-          const cnt        = c.properties.point_count_abbreviated;
-          const el         = document.createElement('div');
-          el.className     = 'cluster-marker pop-in';
-          el.textContent   = cnt;
-          const size       = 20 + cnt * 5;
-          el.style.width   = `${size}px`;
-          el.style.height  = `${size}px`;
-          el.onclick       = () => {
-            const ez = clusterIndex.getClusterExpansionZoom(c.properties.cluster_id);
-            map.easeTo({ center: [lng, lat], zoom: ez, speed: 2 });
-          };
-          markers[key] = new mapboxgl.Marker(el)
-                            .setLngLat([lng, lat])
-                            .addTo(map);
+          if (!markers[key]) {
+            const [lng, lat] = c.geometry.coordinates;
+            const cnt        = c.properties.point_count_abbreviated;
+            const el         = document.createElement('div');
+            el.className     = 'cluster-marker pop-in';
+            el.textContent   = cnt;
+            const size       = 20 + cnt * 5;
+            el.style.width   = `${size}px`;
+            el.style.height  = `${size}px`;
+            el.onclick       = () => {
+              const ez = clusterIndex.getClusterExpansionZoom(c.properties.cluster_id);
+              map.easeTo({ center: [lng, lat], zoom: ez, speed: 2 });
+            };
+            markers[key] = new mapboxgl.Marker(el)
+                              .setLngLat([lng, lat])
+                              .addTo(map);
+          } else {
+            // Move and show existing cluster marker
+            markers[key].setLngLat(c.geometry.coordinates);
+            markers[key].getElement().style.display = '';
+          }
         } else {
           const key = `p_${c.id}`;
-          if (markers[key]) return;
-          const [lng, lat] = c.geometry.coordinates;
-          const img        = document.createElement('img');
-          img.className    = 'marker-icon pop-in';
-          img.src          = c.id===selectedIdx ? icons.click : icons.default;
-          img.onmouseenter = () => img.src = c.id===selectedIdx ? icons.click : icons.hover;
-          img.onmouseleave = () => img.src = c.id===selectedIdx ? icons.click : icons.default;
-          img.onclick      = () => onContactClick(c.id);
-          markers[key]     = new mapboxgl.Marker(img)
-                                .setLngLat([lng, lat])
-                                .addTo(map);
+          if (!markers[key]) {
+            const [lng, lat] = c.geometry.coordinates;
+            const img        = document.createElement('img');
+            img.className    = 'marker-icon pop-in';
+            img.src          = c.id===selectedIdx ? icons.click : icons.default;
+            img.onmouseenter = () => img.src = c.id===selectedIdx ? icons.click : icons.hover;
+            img.onmouseleave = () => img.src = c.id===selectedIdx ? icons.click : icons.default;
+            img.onclick      = () => onContactClick(c.id);
+            markers[key]     = new mapboxgl.Marker(img)
+                                  .setLngLat([lng, lat])
+                                  .addTo(map);
+          } else {
+            // Move and show existing pin marker
+            markers[key].setLngLat(c.geometry.coordinates);
+            markers[key].getElement().style.display = '';
+          }
         }
       });
     }
