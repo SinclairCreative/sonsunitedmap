@@ -30,17 +30,97 @@
       transition: right 0.2s;
     }
     @media (max-width: 900px) {
+      html, body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #22252D;
+      }
       #map {
-        position: relative;
+        position: relative !important;
         top: 0;
         left: 0;
         right: 0 !important;
-        width: 100vw;
-        height: 40vh;
+        width: 100vw !important;
+        height: 40vh !important;
         min-height: 180px;
         max-height: 50vh;
         z-index: 1;
         transition: none;
+      }
+      .floating-panel {
+        position: relative !important;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 100vw !important;
+        max-width: 90vw !important;
+        min-width: 90vw !important; /* Fix: allow width to be 100vw, not forced larger */
+        height: auto !important;
+        min-height: 220px;
+        max-height: none;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 0;
+        background: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        z-index: 10;
+        overflow: visible;
+      }
+      .directory-header {
+        display: flex !important;
+        flex-direction: column;
+        gap: 8px;
+        background: none;
+        padding: 10px 8px 0 8px;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .directory-header .title {
+        display: none !important; /* Hide the title in the panel, keep only .mobile-title */
+      }
+      .toolbar {
+        display: flex !important;
+        flex-direction: row;
+        gap: 8px;
+        margin-bottom: 0;
+        padding: 0;
+      }
+      .toolbar input {
+        flex: 1 1 auto;
+        min-width: 0;
+        font-size: 1rem;
+        padding: 8px 10px;
+      }
+      .toolbar button {
+        font-size: 1rem;
+        padding: 8px 12px;
+        min-width: 0;
+      }
+      .mobile-title {
+        display: block !important;
+        width: 100vw;
+        background: #22252D;
+        color: #fff;
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-align: center;
+        padding: 16px 0 8px 0;
+        margin: 0;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+      }
+      .mapboxgl-ctrl-custom-group {
+        right: 12px !important;
+        top: 74px !important; /* Move controls down */
+        left: auto !important;
+        transform: none !important;
+        z-index: 20;
       }
     }
     .floating-panel {
@@ -319,7 +399,7 @@
     .mapboxgl-ctrl-custom-group {
       position: absolute;
       top: 24px;
-      right: 400px;
+      right: 450px;
       z-index: 20;
       display: flex;
       flex-direction: column;
@@ -348,6 +428,7 @@
   </style>
 </head>
 <body>
+  <div class="mobile-title" style="display:none;">Member Directory</div>
   <div id="map"></div>
   <div class="mapboxgl-ctrl-custom-group" id="custom-map-controls">
     <button class="mapboxgl-ctrl-custom-btn" id="zoom-in" title="Zoom in">+</button>
@@ -763,6 +844,18 @@
     }
 
     initList();
+
+    // Show/hide mobile title based on screen width
+    function handleMobileTitle() {
+      const mobileTitle = document.querySelector('.mobile-title');
+      if (window.innerWidth <= 900) {
+        mobileTitle.style.display = 'block';
+      } else {
+        mobileTitle.style.display = 'none';
+      }
+    }
+    window.addEventListener('resize', handleMobileTitle);
+    window.addEventListener('DOMContentLoaded', handleMobileTitle);
   </script>
 </body>
 </html>
