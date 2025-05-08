@@ -22,11 +22,26 @@
       top: 0;
       left: 0;
       bottom: 0;
-      right: 370px;
+      /* Attach map to the left edge of the directory, minus 50px for a gap */
+      right: 420px !important; /* 370px directory + 50px gap */
       width: auto;
       height: 100vh;
       z-index: 1;
       transition: right 0.2s;
+    }
+    @media (max-width: 900px) {
+      #map {
+        position: relative;
+        top: 0;
+        left: 0;
+        right: 0 !important;
+        width: 100vw;
+        height: 40vh;
+        min-height: 180px;
+        max-height: 50vh;
+        z-index: 1;
+        transition: none;
+      }
     }
     .floating-panel {
       position: absolute;
@@ -50,6 +65,15 @@
     }
     .floating-panel:hover {
       box-shadow: -12px 0 40px 0 rgba(0,0,0,0.35);
+    }
+    .directory-header {
+      background: none;
+      padding: 0;
+      border-radius: 0;
+      box-shadow: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
     .title {
       color: #fff;
@@ -99,20 +123,31 @@
     #info-box {
       background: rgba(255,255,255,0.06);
       border-radius: 10px;
-      padding: 14px 14px 10px 14px;
+      padding: 10px 14px 6px 14px;
       margin-bottom: 0;
       color: #fff;
       box-shadow: 0 1px 4px 0 rgba(0,0,0,0.08);
       font-size: 1rem;
       min-height: 38px;
       max-height: 60px;
-      transition: min-height 0.2s, max-height 0.2s;
+      transition: min-height 0.2s, max-height 0.2s, padding 0.2s;
       overflow: hidden;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      justify-content: center;
     }
     #info-box.expanded {
-      min-height: 80px;
+      min-height: 110px;
       max-height: 400px;
-      transition: min-height 0.2s, max-height 0.2s;
+      padding-bottom: 18px;
+      align-items: stretch;
+    }
+    #info-box em {
+      display: block;
+      line-height: 1.2;
+      margin: 0;
+      padding: 0;
     }
     #basic-info h3 {
       margin: 0 0 4px 0;
@@ -137,6 +172,7 @@
       font-weight: 500;
       cursor: pointer;
       transition: background 0.2s;
+      align-self: flex-start;
     }
     #toggle-details.visible {
       display: inline-block;
@@ -206,14 +242,18 @@
       outline: none;
     }
     #contact-list li:hover, #contact-list li:focus {
-      background: #ED2F24;
+      background: rgba(237,47,36,0.13);
       color: #fff;
     }
     #contact-list li.in-view {
-      background: rgba(237,47,36,0.08); /* More subtle highlight */
+      background: rgba(237,47,36,0.08);
       color: #fff;
       font-weight: 500;
       border-left: 3px solid #ED2F24;
+    }
+    #contact-list li.in-view:hover, #contact-list li.in-view:focus {
+      background: rgba(237,47,36,0.18);
+      color: #fff;
     }
     #contact-list li.active-contact {
       background: linear-gradient(90deg, #ED2F24 60%, #ff5e3a 100%);
@@ -222,7 +262,7 @@
       border-left: 4px solid #fff;
     }
     .list-header {
-      background: none;
+      background: none !important;
       margin-top: 10px;
       padding: 0 0 2px 0;
       font-weight: bold;
@@ -275,37 +315,53 @@
     .cluster-marker:hover {
       box-shadow: 0 0 0 4px #ED2F24, 0 4px 16px 0 rgba(237,47,36,0.18);
     }
-    @media (max-width: 900px) {
-      #map {
-        right: 0;
-      }
-      .floating-panel {
-        width: 98vw;
-        max-width: 98vw;
-        left: 1vw;
-        right: 1vw;
-        border-radius: 18px 18px 0 0;
-        top: auto;
-        bottom: 0;
-        height: 60vh;
-        min-height: 320px;
-        padding: 18px 8px 12px 8px;
-        box-shadow: 0 -4px 32px 0 rgba(0,0,0,0.25);
-      }
-      #contact-list {
-        max-height: 120px;
-      }
+    /* Custom map controls */
+    .mapboxgl-ctrl-custom-group {
+      position: absolute;
+      top: 24px;
+      right: 400px;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .mapboxgl-ctrl-custom-btn {
+      background: rgba(34,37,45,0.96);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 1.4rem;
+      width: 44px;
+      height: 44px;
+      margin: 0;
+      box-shadow: 0 2px 8px 0 rgba(0,0,0,0.18);
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .mapboxgl-ctrl-custom-btn:hover {
+      background: linear-gradient(90deg, #ED2F24 60%, #ff5e3a 100%);
+      color: #fff;
     }
   </style>
 </head>
 <body>
   <div id="map"></div>
+  <div class="mapboxgl-ctrl-custom-group" id="custom-map-controls">
+    <button class="mapboxgl-ctrl-custom-btn" id="zoom-in" title="Zoom in">+</button>
+    <button class="mapboxgl-ctrl-custom-btn" id="zoom-out" title="Zoom out">−</button>
+    <button class="mapboxgl-ctrl-custom-btn" id="recenter" title="Recenter">⟳</button>
+  </div>
   <div class="floating-panel">
-    <div class="title">Member Directory</div>
-    <div class="toolbar">
-      <input id="search" type="text" placeholder="Search name, email, phone, address..." aria-label="Search contacts" />
-      <button id="show-all" title="Show all members on map">All</button>
-      <button id="download" title="Download CSV">CSV</button>
+    <div class="directory-header">
+      <div class="title">Member Directory</div>
+      <div class="toolbar">
+        <input id="search" type="text" placeholder="Search name, email, phone, address..." aria-label="Search contacts" />
+        <button id="show-all" title="Show all members on map">All</button>
+        <button id="download" title="Download CSV">CSV</button>
+      </div>
     </div>
     <div id="info-box">
       <div id="basic-info"><em>Loading contacts…</em></div>
@@ -353,20 +409,6 @@
     });
 
     map.on('load',()=>{
-      // Removed GeolocateControl
-      map.addControl(new mapboxgl.NavigationControl(),'top-right');
-      class Recenter{
-        onAdd(m){ this.btn=document.createElement('button');
-          this.btn.textContent='⟳'; this.btn.className='mapboxgl-ctrl-recenter';
-          this.btn.onclick=()=>m.flyTo({...defaultView,speed:2});
-          this.cont=document.createElement('div');
-          this.cont.className='mapboxgl-ctrl mapboxgl-ctrl-group';
-          this.cont.appendChild(this.btn);
-          return this.cont;
-        }
-        onRemove(){ this.cont.remove(); }
-      }
-      map.addControl(new Recenter(),'top-right');
       Promise.all([
         new Promise((r,j)=>map.loadImage(icons.default,(e,i)=>e?j(e):r(['default',i]))),
         new Promise((r,j)=>map.loadImage(icons.hover,  (e,i)=>e?j(e):r(['hover',i]))),
@@ -376,6 +418,11 @@
         fetchData();
       }).catch(console.error);
     });
+
+    // Custom map controls
+    document.getElementById('zoom-in').onclick = () => map.zoomIn();
+    document.getElementById('zoom-out').onclick = () => map.zoomOut();
+    document.getElementById('recenter').onclick = () => map.flyTo({...defaultView, speed: 2});
 
     function fetchData(){
       spinner.style.display='block';
@@ -409,7 +456,7 @@
       }));
       spinner.style.display='none';
       buildClusterIndex();
-      sortSelect.value='first';
+      sortSelect.value='state';
       initList();
     }
 
@@ -506,7 +553,6 @@
 
     sortSelect.onchange=()=>reorderList(contacts);
 
-    // Utility: get visible contact indices in map view
     function getContactsInView() {
       if (!contacts.length) return [];
       const bounds = map.getBounds();
@@ -520,76 +566,127 @@
         .map(({ i }) => i);
     }
 
-    // Modified reorderList to bring in-view contacts to top and highlight them
     function reorderList(list) {
       contactList.innerHTML = '';
       const crit = sortSelect.value;
       const inViewIdxs = new Set(getContactsInView());
       const activeIdx = selectedIdx;
 
-      // Helper to create a contact <li>
       function makeLi(r, idx) {
         const li = document.createElement('li');
         li.textContent = r.fullName;
         li.tabIndex = 0;
         if (idx === activeIdx) li.classList.add('active-contact');
         else if (inViewIdxs.has(idx)) li.classList.add('in-view');
-        li.onclick = () => {
-          map.flyTo({ center: r.coords, zoom: map.getZoom(), speed: 2 });
-          onContactClick(idx);
+        li.onclick = (e) => {
+          e.stopPropagation();
+          // Cluster expansion logic...
+          if (r.coords) {
+            const zoom = map.getZoom();
+            const clusters = clusterIndex.getClusters(map.getBounds().toArray().flat(), Math.floor(zoom));
+            let foundCluster = null;
+            for (const c of clusters) {
+              if (c.properties && c.properties.cluster) {
+                const leaves = clusterIndex.getLeaves(c.properties.cluster_id, Infinity);
+                if (leaves.some(l => l.id === idx)) {
+                  foundCluster = c;
+                  break;
+                }
+              }
+            }
+            if (foundCluster) {
+              const clusterId = foundCluster.properties.cluster_id;
+              const expansionZoom = clusterIndex.getClusterExpansionZoom(clusterId);
+              map.easeTo({ center: r.coords, zoom: expansionZoom, speed: 2 });
+              setTimeout(() => {
+                map.flyTo({ center: r.coords, zoom: Math.max(expansionZoom, 8), speed: 2 });
+                onContactClick(idx);
+              }, 600);
+            } else {
+              map.flyTo({ center: r.coords, zoom: Math.max(zoom, 8), speed: 2 });
+              onContactClick(idx);
+            }
+          } else {
+            onContactClick(idx);
+          }
         };
         return li;
       }
 
-      // If sorting by first name: flat alphabetical, no headers
+      // Sort by current sort
+      let sorted = [...list];
+      function sortFn(a, b) {
+        if (crit === 'first') return a.fullName.localeCompare(b.fullName);
+        if (crit === 'last') {
+          const la = a.fullName.split(' ').slice(-1)[0],
+                lb = b.fullName.split(' ').slice(-1)[0];
+          return la.localeCompare(lb);
+        }
+        if (crit === 'state') {
+          const sa = (a.address.split(',').map(s=>s.trim())[2]||'');
+          const sb = (b.address.split(',').map(s=>s.trim())[2]||'');
+          return sa.localeCompare(sb) || a.fullName.localeCompare(b.fullName);
+        }
+        if (crit === 'career') {
+          return (a.career||'').localeCompare(b.career||'') || a.fullName.localeCompare(b.fullName);
+        }
+        return 0;
+      }
+      sorted.sort(sortFn);
+
+      // Partition into in-view and not-in-view, preserving sort order
+      const withIdx = sorted.map(r => ({ r, idx: contacts.indexOf(r) }));
+      const inView = withIdx.filter(x => inViewIdxs.has(x.idx) && x.idx !== activeIdx);
+      const notInView = withIdx.filter(x => !inViewIdxs.has(x.idx) && x.idx !== activeIdx);
+
+      // Render active contact at the very top (if any)
+      if (activeIdx !== null && contacts[activeIdx]) {
+        contactList.appendChild(makeLi(contacts[activeIdx], activeIdx));
+      }
+
+      // Render in-view contacts next, then the rest, with headers if needed
       if (crit === 'first') {
-        // Bring in-view contacts to top
-        const withIdx = list.map(r => ({ r, idx: contacts.indexOf(r) }));
-        const inView = withIdx.filter(x => inViewIdxs.has(x.idx));
-        const notInView = withIdx.filter(x => !inViewIdxs.has(x.idx));
-        [...inView, ...notInView]
-          .sort((a, b) => a.r.fullName.localeCompare(b.r.fullName))
-          .forEach(({ r, idx }) => contactList.appendChild(makeLi(r, idx)));
+        [...inView, ...notInView].forEach(({ r, idx }) => contactList.appendChild(makeLi(r, idx)));
         return;
       }
 
-      // Otherwise group with headers
-      const groups = {};
-      list.forEach(r => {
-        let key = '';
-        if (crit === 'last')   key = r.fullName.split(' ').slice(-1)[0][0].toUpperCase();
-        if (crit === 'state')  key = (r.address.split(',').map(s=>s.trim())[2]||'');
-        if (crit === 'career') key = r.career||'';
-        groups[key] = groups[key] || [];
-        groups[key].push(r);
-      });
-      Object.keys(groups).sort().forEach(hdr => {
+      // Grouped sort (last, state, career)
+      const groupBy = (arr) => {
+        const groups = {};
+        arr.forEach(({ r, idx }) => {
+          let key = '';
+          if (crit === 'last')   key = r.fullName.split(' ').slice(-1)[0][0].toUpperCase();
+          if (crit === 'state')  key = (r.address.split(',').map(s=>s.trim())[2]||'');
+          if (crit === 'career') key = r.career||'';
+          groups[key] = groups[key] || [];
+          groups[key].push({ r, idx });
+        });
+        return groups;
+      };
+
+      // In-view contacts (grouped by header)
+      const inViewGroups = groupBy(inView);
+      Object.keys(inViewGroups).sort().forEach(hdr => {
         const hli = document.createElement('li');
         hli.textContent = hdr;
         hli.className = 'list-header';
         contactList.appendChild(hli);
+        inViewGroups[hdr].forEach(({ r, idx }) => contactList.appendChild(makeLi(r, idx)));
+      });
 
-        // Bring in-view contacts to top within each group
-        const group = groups[hdr].map(r => ({ r, idx: contacts.indexOf(r) }));
-        const inView = group.filter(x => inViewIdxs.has(x.idx));
-        const notInView = group.filter(x => !inViewIdxs.has(x.idx));
-        [...inView, ...notInView]
-          .sort((a, b) => {
-            if (crit === 'last') {
-              const la = a.r.fullName.split(' ').slice(-1)[0],
-                    lb = b.r.fullName.split(' ').slice(-1)[0];
-              return la.localeCompare(lb);
-            }
-            return a.r.fullName.localeCompare(b.r.fullName);
-          })
-          .forEach(({ r, idx }) => contactList.appendChild(makeLi(r, idx)));
+      // Not-in-view contacts (grouped by header)
+      const notInViewGroups = groupBy(notInView);
+      Object.keys(notInViewGroups).sort().forEach(hdr => {
+        const hli = document.createElement('li');
+        hli.textContent = hdr;
+        hli.className = 'list-header';
+        contactList.appendChild(hli);
+        notInViewGroups[hdr].forEach(({ r, idx }) => contactList.appendChild(makeLi(r, idx)));
       });
     }
 
-    // Listen for map move to update highlights
     map.on('moveend', () => reorderList(contacts));
 
-    // When a contact is selected, expand info box and update list
     function onContactClick(i){
       if(selectedIdx!==null){
         const oldMk=markers[`p_${selectedIdx}`];
@@ -604,7 +701,6 @@
       reorderList(contacts);
     }
 
-    // When no contact is selected, shrink info box
     function showDefaultInfo() {
       basicInfo.innerHTML = `<em>${contacts.length} Sons United members:</em>`;
       extraDetails.innerHTML = '';
@@ -628,14 +724,22 @@
       document.getElementById('info-box').classList.add('expanded');
     }
 
-    // On page load, show default info and shrink info box
+    toggleBtn.onclick = function() {
+      if (extraDetails.style.display === 'none' || extraDetails.style.display === '') {
+        extraDetails.style.display = 'block';
+        toggleBtn.textContent = 'Hide Details';
+      } else {
+        extraDetails.style.display = 'none';
+        toggleBtn.textContent = 'Details';
+      }
+    };
+
     if (contacts.length === 0) {
       basicInfo.innerHTML = `<em>Loading contacts…</em>`;
       document.getElementById('info-box').classList.remove('expanded');
     }
     toggleBtn.classList.remove('visible');
 
-    // When clicking outside a contact, reset info box
     document.body.addEventListener('click', function(e) {
       if (
         !e.target.closest('#contact-list') &&
@@ -645,7 +749,6 @@
         selectedIdx = null;
         showDefaultInfo();
         reorderList(contacts);
-        // Reset marker icons
         Object.keys(markers).forEach(k => {
           if (k.startsWith('p_')) {
             markers[k].getElement().src = icons.default;
@@ -656,8 +759,6 @@
 
     function initList() {
       reorderList(contacts);
-      // Ensure the contact list is visible on load (no action needed if always rendered)
-      // Optionally, you can scroll to top:
       contactList.scrollTop = 0;
     }
 
