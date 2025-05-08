@@ -491,7 +491,7 @@
       Promise.all([
         new Promise((r,j)=>map.loadImage(icons.default,(e,i)=>e?j(e):r(['default',i]))),
         new Promise((r,j)=>map.loadImage(icons.hover,  (e,i)=>e?j(e):r(['hover',i]))),
-        new Promise((r,j)=>map.loadImage(icons.click,  (e,i)=>e?j(e):r(['click',i])))
+        new Promise((r,j)=>map.loadImage(icons.click,  (e,i)=>e?j(e):r(['click',i]))),
       ]).then(imgs=>{
         imgs.forEach(([n,i])=>map.addImage(n,i));
         fetchData();
@@ -630,11 +630,8 @@
       });
     }
 
-    document.getElementById('show-all').onclick=()=>{
-      if(!contacts.length) return;
-      const all=contacts.map(r=>r.coords),
-            bounds=all.reduce((b,c)=>b.extend(c),new mapboxgl.LngLatBounds(all[0],all[0]));
-      map.fitBounds(bounds,{padding:20,speed:2});
+    document.getElementById('show-all').onclick = () => {
+      map.flyTo({ ...defaultView, speed: 2 });
     };
 
     document.getElementById('search').oninput=e=>{
